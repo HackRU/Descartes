@@ -4,7 +4,9 @@ I think, therefore I see: take a picture of whiteboard code and automatically co
 Built for a16z's [Battle of the Hacks v4.0](https://battleofthehacks4.devpost.com/).
 
 ## Usage
+
 ## Documentation
+
 ## Issues and Bugs
 
 ## Contributors
