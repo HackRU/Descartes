@@ -45,7 +45,7 @@ def upload():
 
 
 def parse():
-    img_file = '../dump/count.jpg'  # load the image
+    img_file = '../dump/temp.jpg'  # load the image
     o_img = cv2.cvtColor(cv2.imread(img_file), cv2.COLOR_BGR2GRAY)  # convert to grayscale
     o_rows, o_cols = o_img.shape  # original image height and width
     new_size_pixels = 500
