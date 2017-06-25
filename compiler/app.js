@@ -69,9 +69,9 @@ app.get('/file-ready', (req, res)=>{
 });
 
 app.post('/payload', (req, res)=>{
-  console.log(res);
-  var body = res.body;
-  console.log(res.body);
+  console.log(req);
+  var body = req.body;
+  console.log(req.body);
   console.log(body);
   fs.writeFile(path.join(__dirname, '../dump/test.py'), body.data, (err)=>{
     if (err) {
