@@ -62,7 +62,7 @@ app.post('/payload', (req, res)=>{
           public: true,
           files: {
             'test.py': {
-              content: global_data
+              content: resultdata
             }
           }
         }),
