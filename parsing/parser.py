@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from flask import Flask, request, json
+from flask import Flask, request, json, send_from_directory
 from PIL import ImageEnhance
 import os
 import http.client, urllib.request, urllib.parse, urllib.error, base64, requests, time, json
@@ -9,6 +9,7 @@ from imgurpython import ImgurClient
 client_id = 'd18cea4af0b4c75'
 client_secret = 'e0dd972784aab4b0b4d39156f982d55c29b4d3b3'
 
+NGROK_URL = 'https://ea76e7c0.ngrok.io'
 AZURE_SUB_KEY = '99894b2c78f144ca80dc013e744a8da2'
 AZURE_REQ_HEADERS = {
     # Request headers.
@@ -44,8 +45,14 @@ def upload():
     return response
 
 
+@app.route("/img/<num>", methods=['GET'])
+def img(num):
+    return send_from_directory('dump', 'img-{}.jpg'.format(num))
+
+
+
 def parse():
-    img_file = '/home/ubuntu/Descartes/dump/temp.JPG'  # load the image
+    img_file = 'dump/count.jpg'  # load the image
     o_img = cv2.cvtColor(cv2.imread(img_file), cv2.COLOR_BGR2GRAY)  # convert to grayscale
     o_rows, o_cols = o_img.shape  # original image height and width
     new_size_pixels = 500
@@ -107,7 +114,7 @@ def parse():
                             if indent_gap == 0: # set the initial indent gap
                                 indent_gap = diff
 
-                            print(diff, indent_gap)
+                            # print(diff, indent_gap)
 
                             if diff//indent_gap - last_indent > 1:
                                 img['indents'] = last_indent+1
@@ -121,15 +128,15 @@ def parse():
                 break
 
 
-        print('img-{}'.format(img_num), img['indents'])
+        # print('img-{}'.format(img_num), img['indents'])
 
         cv2.imshow('img-{}'.format(img_num), img['img'])
-        cv2.imwrite('../dump/img-{}.jpg'.format(img_num), img['img'])
+        cv2.imwrite('dump/img-{}.jpg'.format(img_num), img['img'])
 
         # r = imgur_client.upload_from_path('../dump/img-{}.jpg'.format(img_num))
         # link_to_img = r['link']
 
-        img['op_loc'] = send_to_azure('http://34.225.118.123:8080/img/img-{}.jpg'.format(img_num))
+        img['op_loc'] = send_to_azure('{}/img/{}'.format(NGROK_URL, img_num))
 
 
     print('All images sent to Azure. Waiting 10 seconds for processing.')
@@ -150,10 +157,10 @@ def parse():
         for line in text_lines:
             actual_line += (line['text'] + ' ')
 
-        img['parsed'] = actual_line
+        img['parsed'] = process_line_syntax(actual_line)
 
         for _ in range(img['indents']):
-            print('\t',end='')
+            img['parsed'] = '\t' + img['parsed']
 
         print(img['parsed'])
         # print(json.dumps(parsed, sort_keys=True, indent=2))
@@ -162,6 +169,15 @@ def parse():
     cv2.waitKey()
 
     return
+
+
+
+def process_line_syntax(unedited_line):
+
+    edited_line = '' # something here
+    return edited_line
+
+
 
 
 def send_to_azure(i_link):
