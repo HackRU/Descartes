@@ -70,7 +70,7 @@ app.get('/file-ready', (req, res)=>{
 
 app.post('/payload', (req, res)=>{
   console.log(res);
-  var body = JSON.parse(res.body);
+  var body = res.body;
   console.log(res.body);
   console.log(body);
   fs.writeFile(path.join(__dirname, '../dump/test.py'), body.data, (err)=>{
