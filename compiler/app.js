@@ -6,9 +6,10 @@ const { exec } = require('child_process');
 const config = require('./config.js');
 
 var app = express();
-var global_data = fs.readFileSync('../dump/test.py').toString();
+var currentGist = "N/A";
 
 app.use('/img', express.static(path.join(__dirname, '../dump')));
+app.set('json spaces', 2);
 
 app.get('/', (req, res)=>{
   res.send("HELLOWORLD");
@@ -18,8 +19,13 @@ app.get('/', (req, res)=>{
 //   res.sendFile(path.join(__dirname,'../dump/img.jpg'));
 // })
 
+app.get('/gist', (req, res)=>{
+  res.json({ url: currentGist });
+});
+
 app.get('/file-ready', (req, res)=>{
-  exec('python ../dump/test.py', (err, stdout, stderr)=>{
+  var global_data = fs.readFileSync(path.join(__dirname, '../dump/test.py')).toString();
+  exec('python '+ path.join(__dirname, '../dump/test.py'), (err, stdout, stderr)=>{
     var result;
     if(stderr) {
       result = stderr;
@@ -30,7 +36,7 @@ app.get('/file-ready', (req, res)=>{
     request({
       method: 'POST',
       headers: {
-        'User-Agent': 'michaelyoo',
+        'User-Agent': 'dominusbelli',
         Authorization: config.GitHubAPIKey
       },
       body: JSON.stringify({
@@ -48,7 +54,13 @@ app.get('/file-ready', (req, res)=>{
       console.log('error:', error);
       console.log('statusCode:', response.statusCode);
       console.log('body:', body);
-    })
+      console.log();
+      console.log();
+      console.log();
+      var parsedbody = JSON.parse(body);
+      console.log(parsedbody.html_url);
+      currentGist = parsedbody.html_url;
+    });
   });
 });
 
