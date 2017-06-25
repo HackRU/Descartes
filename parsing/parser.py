@@ -6,17 +6,16 @@ import os
 import http.client, urllib.request, urllib.parse, urllib.error, base64, requests, time, json
 from imgurpython import ImgurClient
 
-
 client_id = 'd18cea4af0b4c75'
 client_secret = 'e0dd972784aab4b0b4d39156f982d55c29b4d3b3'
 
 AZURE_SUB_KEY = '99894b2c78f144ca80dc013e744a8da2'
 AZURE_REQ_HEADERS = {
-        # Request headers.
-        # Another valid content type is "application/octet-stream".
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key': AZURE_SUB_KEY,
-    }
+    # Request headers.
+    # Another valid content type is "application/octet-stream".
+    'Content-Type': 'application/json',
+    'Ocp-Apim-Subscription-Key': AZURE_SUB_KEY,
+}
 
 imgur_client = ImgurClient(client_id, client_secret)
 
@@ -27,9 +26,9 @@ app = Flask(__name__)
 def index():
     return 'HOME PAGE DUDE.'
 
+
 @app.route("/upload", methods=['POST'])
 def upload():
-
     image_file = request.data
     with open('../dump/temp.jpg', 'wb') as f:
         f.write(image_file)
@@ -44,19 +43,19 @@ def upload():
     parse()
     return response
 
-def parse():
 
-    img_file = '../dump/temp.jpg' # load the image
-    o_img = cv2.cvtColor(cv2.imread(img_file), cv2.COLOR_BGR2GRAY) # convert to grayscale
-    o_rows, o_cols = o_img.shape # original image height and width
+def parse():
+    img_file = '../dump/count.jpg'  # load the image
+    o_img = cv2.cvtColor(cv2.imread(img_file), cv2.COLOR_BGR2GRAY)  # convert to grayscale
+    o_rows, o_cols = o_img.shape  # original image height and width
     new_size_pixels = 500
     c_r_aspect = o_cols / o_rows
 
     if o_rows > o_cols:  # this if/else basically resizes images down in case they are super big
         image = cv2.resize(o_img, (int(c_r_aspect * new_size_pixels), new_size_pixels))
     else:
-        r_c_aspect = 1/c_r_aspect
-        image = cv2.resize(o_img, (new_size_pixels, int(r_c_aspect*new_size_pixels)))
+        r_c_aspect = 1 / c_r_aspect
+        image = cv2.resize(o_img, (new_size_pixels, int(r_c_aspect * new_size_pixels)))
 
     rows, cols = image.shape  # rows = height of image; cols = width of image
 
@@ -74,7 +73,7 @@ def parse():
         elif min_so_far > 100 and start and r - start_r > 30:
             start = False
             end_r = r
-            list_of_sections.append({'start': start_r-10, 'end': end_r+10})
+            list_of_sections.append({'start': start_r - 10, 'end': end_r + 10})
         else:
             pass
 
@@ -88,7 +87,6 @@ def parse():
 
     last_indent_pos = 0
     current_indent = 0
-    op_locs = []
 
     for img_num, img in enumerate(list_of_img_dicts):  # loop through to pass to azure
         transposed = img['img'].T
@@ -98,14 +96,18 @@ def parse():
                 for row in col:
                     if row < 100 and not hit_text:
                         hit_text = True
-                        if (c_num - last_indent_pos) > 75:
+                        if (c_num - last_indent_pos) > 25 and last_indent_pos > 0:
                             current_indent += 1
+                        elif (last_indent_pos - c_num) > 25:
+                            current_indent -= 1
+
                         last_indent_pos = c_num
                         img['indents'] = current_indent
                     else:
                         pass
             else:
                 break
+
 
         print('img-{}'.format(img_num), img['indents'])
 
@@ -114,9 +116,7 @@ def parse():
         r = imgur_client.upload_from_path('../dump/img-{}.jpg'.format(img_num))
         link_to_img = r['link']
 
-        op_location = send_to_azure(link_to_img)
-        print(op_location)
-        op_locs.append(op_location)
+        img['op_loc'] = send_to_azure(link_to_img)
 
 
     print('All images sent to Azure. Waiting 10 seconds for processing.')
@@ -125,18 +125,24 @@ def parse():
     # after this point, all processing should be complete for every picture we sent above
     # use the op locs and loop through to retrieve data from their server
 
-    for location in op_locs:
+    for img in list_of_img_dicts:
         # Execute the second REST API call and get the response.
-        response = requests.request('GET', location, json=None, data=None, headers=AZURE_REQ_HEADERS, params=None)
+        response = requests.request('GET', img['op_loc'], json=None, data=None, headers=AZURE_REQ_HEADERS, params=None)
         # 'data' contains the JSON data. The following formats the JSON data for display.
         parsed = json.loads(response.text)
         text_lines = parsed['recognitionResult']['lines']
+        # print(parsed)
 
         actual_line = ''
         for line in text_lines:
             actual_line += (line['text'] + ' ')
 
-        print(actual_line)
+        img['parsed'] = actual_line
+
+        for _ in range(img['indents']):
+            print('\t',end='')
+
+        print(img['parsed'])
         # print(json.dumps(parsed, sort_keys=True, indent=2))
 
     cv2.imshow('', np.asarray(image))
@@ -146,7 +152,6 @@ def parse():
 
 
 def send_to_azure(i_link):
-
     ###############################################
     #### Update or verify the following values. ###
     ###############################################
