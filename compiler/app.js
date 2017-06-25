@@ -32,7 +32,6 @@ app.get('/file-ready', (req, res)=>{
     } else {
       result = stdout;
     }
-    res.send(result);
     request({
       method: 'POST',
       headers: {
@@ -60,6 +59,7 @@ app.get('/file-ready', (req, res)=>{
       var parsedbody = JSON.parse(body);
       console.log(parsedbody.html_url);
       currentGist = parsedbody.html_url;
+      res.json({result: result, url: currentGist});
     });
   });
 });
