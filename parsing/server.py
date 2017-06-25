@@ -4,6 +4,7 @@ from flask import Flask, request, json
 from PIL import ImageEnhance
 import os
 
+
 app = Flask(__name__)
 
 
@@ -15,7 +16,9 @@ def index():
 def upload():
 
     image_file = request.data
-    with open('tmpimage.jpg', 'wb') as f:
+    print(image_file)
+    print(type(image_file))
+    with open('test_cases/temp.jpg', 'wb') as f:
         f.write(image_file)
     f.close()
 
@@ -25,7 +28,7 @@ def upload():
         mimetype='html/text'
     )
 
-    
+    parser('')
     return response
 
 if __name__ == '__main__':
