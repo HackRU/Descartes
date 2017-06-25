@@ -1,40 +1,24 @@
 import cv2
 import numpy as np
-from flask import Flask, request
 from PIL import ImageEnhance
 
-app = Flask(__name__)
-
-
-
-@app.route("/upload", methods=['POST'])
-def image_upload():
-    if request.method == 'GET':
-        return 'not the right method'
-
-    return 'nice.'
 
 
 def parse():
 
-    img_file = 'test_cases/foo.jpg' # load the image
-
-    # o_img = cv2.imread(img_file)
+    img_file = 'C:/test_cases/nice.jpg' # load the image
     o_img = cv2.cvtColor(cv2.imread(img_file), cv2.COLOR_BGR2GRAY) # convert to grayscale
-    o_rows, o_cols = o_img.shape
+    o_rows, o_cols = o_img.shape # original image height and width
+    new_size_pixels = 500
+    c_r_aspect = o_cols / o_rows
 
-    if o_rows > o_cols:
-        c_r_aspect = o_cols / o_rows
-        NEW_ROWS = 500
-        image = cv2.resize(o_img, (int(c_r_aspect * NEW_ROWS), NEW_ROWS))
+    if o_rows > o_cols:  # this if/else basically resizes images down in case they are super big
+        image = cv2.resize(o_img, (int(c_r_aspect * new_size_pixels), new_size_pixels))
     else:
-        r_c_aspect = o_rows / o_cols
-        NEW_COLS = 500
-        image = cv2.resize(o_img, (NEW_COLS, int(r_c_aspect*NEW_COLS)))
+        r_c_aspect = 1/c_r_aspect
+        image = cv2.resize(o_img, (new_size_pixels, int(r_c_aspect*new_size_pixels)))
 
-    rows, cols = image.shape
-
-    print('img rows: {}, img width: {}'.format(rows, cols))
+    rows, cols = image.shape  # rows = height of image; cols = width of image
 
     list_of_sections = []
     start = False
@@ -59,15 +43,12 @@ def parse():
     for img_num, line in enumerate(list_of_sections):
         # cv2.line(image, (0, line['start']), (cols, line['start']), (0, 0, 0), thickness=1)
         # cv2.line(image, (0, line['end']), (cols, line['end']), (0, 0, 0), thickness=1)
-        # print(line['start'], line['end'])
         crop_img = image[line['start']:line['end'], 0:cols]
         list_of_img_dicts.append({'img': crop_img, 'indents': 0})
 
 
     for img_num, img in enumerate(list_of_img_dicts):  # loop through to pass to azure
         cv2.imshow('img {}'.format(img_num), img['img'])
-
-
         # cv2.imwrite('{}.jpg'.format(img_num), crop_img)
 
 
@@ -121,24 +102,4 @@ def parse():
 
 
 if __name__ == '__main__':
-    # app.run()
     parse()
-
-# def parser(image_link, web=False):
-#     if web:  # if web is True, the image link is a web resource, so we need to download it first
-#
-#         # download the image from the corresponding link and save it as a temp file
-#     else:
-
-#
-# try:
-#     import Image
-# except ImportError:
-#     from PIL import Image
-# import pytesseract
-#
-# # pytesseract.pytesseract.tesseract_cmd = '<full_path_to_your_tesseract_executable>'
-# # Include the above line, if you don't have tesseract executable in your PATH
-# # Example tesseract_cmd: 'C:\\Program Files (x86)\\Tesseract-OCR\\tesseract'
-#
-# print(pytesseract.image_to_string(Image.open('test_cases/function.jpg')))
