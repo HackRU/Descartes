@@ -85,8 +85,10 @@ def parse():
         crop_img = image[line['start']:line['end'], 0:cols]
         list_of_img_dicts.append({'img': crop_img, 'indents': 0})
 
-    last_indent_pos = 0
-    current_indent = 0
+    # last_indent_pos = 0
+    last_indent = 0
+    indent_gap = 0 # number of pixels per indent
+    code_start_pos = -1
 
     for img_num, img in enumerate(list_of_img_dicts):  # loop through to pass to azure
         transposed = img['img'].T
@@ -94,15 +96,25 @@ def parse():
         for c_num, col in enumerate(transposed):
             if not hit_text:
                 for row in col:
-                    if row < 100 and not hit_text:
+                    if row < 100 and not hit_text: # less than shade of 100
                         hit_text = True
-                        if (c_num - last_indent_pos) > 25 and last_indent_pos > 0:
-                            current_indent += 1
-                        elif (last_indent_pos - c_num) > 25:
-                            current_indent -= 1
 
-                        last_indent_pos = c_num
-                        img['indents'] = current_indent
+                        if code_start_pos == -1:  # set code start
+                            code_start_pos = c_num
+                            img['indents'] = 0
+                        else:
+                            diff = abs(c_num - code_start_pos)
+                            if indent_gap == 0: # set the initial indent gap
+                                indent_gap = diff
+
+                            print(diff, indent_gap)
+
+                            if diff//indent_gap - last_indent > 1:
+                                img['indents'] = last_indent+1
+                            else:
+                                img['indents'] = diff//indent_gap
+
+                        last_indent = img['indents']
                     else:
                         pass
             else:
@@ -113,8 +125,8 @@ def parse():
 
         cv2.imshow('img-{}'.format(img_num), img['img'])
         cv2.imwrite('../dump/img-{}.jpg'.format(img_num), img['img'])
-        r = imgur_client.upload_from_path('../dump/img-{}.jpg'.format(img_num))
-        link_to_img = r['link']
+        # r = imgur_client.upload_from_path('../dump/img-{}.jpg'.format(img_num))
+        # link_to_img = r['link']
 
         img['op_loc'] = send_to_azure(link_to_img)
 
