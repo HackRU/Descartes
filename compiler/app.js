@@ -64,4 +64,15 @@ app.get('/file-ready', (req, res)=>{
   });
 });
 
+app.post('/payload', (req, res)=>{
+  var body = JSON.parse(res.body);
+  console.log(body);
+  fs.writeFile(path.join(__dirname, '../dump/test.py'), body, (err)=>{
+    if (err) {
+      console.log('shiiiit');
+    }
+
+  });
+});
+
 app.listen(8080);
