@@ -16,6 +16,7 @@ AZURE_REQ_HEADERS = {
     'Ocp-Apim-Subscription-Key': AZURE_SUB_KEY,
 }
 
+TEMP_FILE = 'dump/temp.jpg'
 imgur_client = ImgurClient(client_id, client_secret)
 
 app = Flask(__name__)
@@ -29,17 +30,18 @@ def index():
 @app.route("/upload", methods=['POST'])
 def upload():
     image_file = request.data
-    with open('../dump/temp.jpg', 'wb') as f:
+    with open(TEMP_FILE, 'wb') as f:
         f.write(image_file)
     f.close()
 
+    full_string = parse()
+
     response = app.response_class(
-        response=json.dumps('received ur img! thx.'),
+        response=json.dumps(full_string),
         status=200,
         mimetype='html/text'
     )
-
-    parse()
+    
     return response
 
 
@@ -50,7 +52,7 @@ def img(num):
 
 
 def parse():
-    img_file = 'dump/count.jpg'  # load the image
+    img_file = TEMP_FILE  # load the image
     o_img = cv2.cvtColor(cv2.imread(img_file), cv2.COLOR_BGR2GRAY)  # convert to grayscale
     o_rows, o_cols = o_img.shape  # original image height and width
     new_size_pixels = 500
@@ -137,11 +139,14 @@ def parse():
         img['op_loc'] = send_to_azure('{}/img/{}'.format(NGROK_URL, img_num))
 
 
-    print('All images sent to Azure. Waiting 10 seconds for processing.')
-    time.sleep(10)
+    print('All images sent. Waiting 7 seconds for processing.')
+    time.sleep(7)
 
     # after this point, all processing should be complete for every picture we sent above
-    # use the op locs and loop through to retrieve data from their server
+    # loop through to retrieve data from their server
+
+    full_string = ''
+
 
     for img in list_of_img_dicts:
         # Execute the second REST API call and get the response.
@@ -160,20 +165,35 @@ def parse():
         for _ in range(img['indents']):
             img['parsed'] = '\t' + img['parsed']
 
-        print(img['parsed'])
-        # print(json.dumps(parsed, sort_keys=True, indent=2))
+        full_string += (img['parsed'] + '\n')
+
+
+    print(full_string)
+
+    payload = {'data': full_string}
+    r = requests.post('http://34.225.118.123:8080/payload', data='hi')
+    print(r.status_code)
 
     cv2.imshow('', np.asarray(image))
     cv2.waitKey()
 
-    return
+    return full_string
 
 
 
-def process_line_syntax(unedited_line):
+def process_line_syntax(line):
 
-    edited_line = '' # something here
-    return edited_line
+    # check for matching parenthesis
+
+
+    # this checks first word to see if we should put colon
+    vars = ['def', 'if', 'for', 'else', 'elif']
+    if line.split(' ')[0] in vars and line[-1:] != ':':
+        line = line + ':'
+
+
+
+    return line
 
 
 
@@ -222,6 +242,12 @@ def send_to_azure(i_link):
         ####################################
 
 
+
 if __name__ == '__main__':
-    parse()
+    # parse()
     # app.run()
+
+    # payload = {'data': 'string here lol'}
+    payload = 'string here lol'
+    r = requests.post('http://34.225.118.123:8080/payload', data=payload)
+    print(r.status_code)
