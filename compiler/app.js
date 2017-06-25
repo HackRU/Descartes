@@ -37,6 +37,7 @@ app.post('/payload', (req, res)=>{
   console.log(req.body);
   console.log(body);
   var resultdata = body.data.slice(1, -1);
+  resultdata = unescape(resultdata);
   fs.writeFile(path.join(__dirname, '../dump/test.py'), unescape(resultdata), (err)=>{
     if (err) {
       console.log(err);
