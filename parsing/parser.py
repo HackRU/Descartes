@@ -125,10 +125,11 @@ def parse():
 
         cv2.imshow('img-{}'.format(img_num), img['img'])
         cv2.imwrite('../dump/img-{}.jpg'.format(img_num), img['img'])
+
         # r = imgur_client.upload_from_path('../dump/img-{}.jpg'.format(img_num))
         # link_to_img = r['link']
 
-        img['op_loc'] = send_to_azure(link_to_img)
+        img['op_loc'] = send_to_azure('http://34.225.118.123:8080/img/img-{}.jpg'.format(img_num))
 
 
     print('All images sent to Azure. Waiting 10 seconds for processing.')
