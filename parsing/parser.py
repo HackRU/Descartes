@@ -54,12 +54,21 @@ def parse():
         else:
             pass
 
+    list_of_img_dicts = []
+
     for img_num, line in enumerate(list_of_sections):
-        cv2.line(image, (0, line['start']), (cols, line['start']), (0, 0, 0), thickness=1)
-        cv2.line(image, (0, line['end']), (cols, line['end']), (0, 0, 0), thickness=1)
-        print(line['start'], line['end'])
+        # cv2.line(image, (0, line['start']), (cols, line['start']), (0, 0, 0), thickness=1)
+        # cv2.line(image, (0, line['end']), (cols, line['end']), (0, 0, 0), thickness=1)
+        # print(line['start'], line['end'])
         crop_img = image[line['start']:line['end'], 0:cols]
-        cv2.imwrite('{}.jpg'.format(img_num), crop_img)
+        list_of_img_dicts.append({'img': crop_img, 'indents': 0})
+
+
+    for img_num, img in enumerate(list_of_img_dicts):  # loop through to pass to azure
+        cv2.imshow('img {}'.format(img_num), img['img'])
+
+
+        # cv2.imwrite('{}.jpg'.format(img_num), crop_img)
 
 
 
