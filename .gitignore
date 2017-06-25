@@ -1,2 +1,3 @@
-venv
 compiler/config.js
+parsing/whl_files
+parsing/venv
