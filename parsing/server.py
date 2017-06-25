@@ -1,9 +1,8 @@
 import cv2
 import numpy as np
-from flask import Flask, request, json
+from flask import Flask, request, json, send_from_directory
 from PIL import ImageEnhance
 import os
-
 
 app = Flask(__name__)
 
@@ -12,13 +11,11 @@ app = Flask(__name__)
 def index():
     return 'HOME PAGE DUDE.'
 
+
 @app.route("/upload", methods=['POST'])
 def upload():
-
     image_file = request.data
-    print(image_file)
-    print(type(image_file))
-    with open('test_cases/temp.jpg', 'wb') as f:
+    with open('../dump/temp.jpg', 'wb') as f:
         f.write(image_file)
     f.close()
 
@@ -28,8 +25,14 @@ def upload():
         mimetype='html/text'
     )
 
-    parser('')
+    parse()
     return response
+
+
+@app.route("/img/<num>", methods=['GET'])
+def img(num):
+    return send_from_directory('dump', 'img-{}.jpg'.format(num))
+
 
 if __name__ == '__main__':
     app.run()

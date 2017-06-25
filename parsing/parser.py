@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 from flask import Flask, request, json, send_from_directory
-from PIL import ImageEnhance
-import os
 import http.client, urllib.request, urllib.parse, urllib.error, base64, requests, time, json
 from imgurpython import ImgurClient
 
