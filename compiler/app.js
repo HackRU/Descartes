@@ -11,6 +11,7 @@ var currentGist = "N/A";
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+app.use(bodyParser.text());
 
 app.use('/img', express.static(path.join(__dirname, '../dump')));
 app.set('json spaces', 2);
