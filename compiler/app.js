@@ -11,7 +11,6 @@ var currentGist = "N/A";
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-app.use(bodyParser.text());
 
 app.use('/img', express.static(path.join(__dirname, '../dump')));
 app.set('json spaces', 2);
@@ -71,9 +70,10 @@ app.get('/file-ready', (req, res)=>{
 
 app.post('/payload', (req, res)=>{
   console.log(res);
-  //var body = JSON.parse(res.body);
+  var body = JSON.parse(res.body);
   console.log(res.body);
-  fs.writeFile(path.join(__dirname, '../dump/test.py'), res.body, (err)=>{
+  console.log(body);
+  fs.writeFile(path.join(__dirname, '../dump/test.py'), body.data, (err)=>{
     if (err) {
       console.log(err);
     }
