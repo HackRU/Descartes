@@ -10,11 +10,13 @@ app.get('/', (req, res)=>{
 
 app.get('/file-ready', (req, res)=>{
   exec('python ../dump/test.py', (err, stdout, stderr)=>{
+    var result;
     if(stderr) {
-      console.log(stderr);
+      result = stderr;
+    } else {
+      result = stdout;
     }
-    console.log(stdout);
-    res.status(200);
+    res.send(result);
   });
 });
 
