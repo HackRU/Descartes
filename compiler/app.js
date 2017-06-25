@@ -70,7 +70,7 @@ app.post('/payload', (req, res)=>{
   console.log(res.body);
   fs.writeFile(path.join(__dirname, '../dump/test.py'), res.body, (err)=>{
     if (err) {
-      console.log('shiiiit');
+      console.log(err);
     }
 
   });
