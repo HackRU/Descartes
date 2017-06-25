@@ -28,44 +28,7 @@ app.get('/gist', (req, res)=>{
 });
 
 app.get('/file-ready', (req, res)=>{
-  var global_data = fs.readFileSync(path.join(__dirname, '../dump/test.py')).toString();
-  exec('python '+ path.join(__dirname, '../dump/test.py'), (err, stdout, stderr)=>{
-    var result;
-    if(stderr) {
-      result = stderr;
-    } else {
-      result = stdout;
-    }
-    request({
-      method: 'POST',
-      headers: {
-        'User-Agent': 'dominusbelli',
-        Authorization: config.GitHubAPIKey
-      },
-      body: JSON.stringify({
-        description: 'whatever you want',
-        public: true,
-        files: {
-          'test.py': {
-            content: global_data
-          }
-        }
-      }),
-      uri:"https://api.github.com/gists"
 
-    }, function(error, response, body){
-      console.log('error:', error);
-      console.log('statusCode:', response.statusCode);
-      console.log('body:', body);
-      console.log();
-      console.log();
-      console.log();
-      var parsedbody = JSON.parse(body);
-      console.log(parsedbody.html_url);
-      currentGist = parsedbody.html_url;
-      res.json({result: result, url: currentGist});
-    });
-  });
 });
 
 app.post('/payload', (req, res)=>{
@@ -77,7 +40,44 @@ app.post('/payload', (req, res)=>{
     if (err) {
       console.log(err);
     }
+    var global_data = fs.readFileSync(path.join(__dirname, '../dump/test.py')).toString();
+    exec('python '+ path.join(__dirname, '../dump/test.py'), (err, stdout, stderr)=>{
+      var result;
+      if(stderr) {
+        result = stderr;
+      } else {
+        result = stdout;
+      }
+      request({
+        method: 'POST',
+        headers: {
+          'User-Agent': 'dominusbelli',
+          Authorization: config.GitHubAPIKey
+        },
+        body: JSON.stringify({
+          description: 'whatever you want',
+          public: true,
+          files: {
+            'test.py': {
+              content: global_data
+            }
+          }
+        }),
+        uri:"https://api.github.com/gists"
 
+      }, function(error, response, body){
+        console.log('error:', error);
+        console.log('statusCode:', response.statusCode);
+        console.log('body:', body);
+        console.log();
+        console.log();
+        console.log();
+        var parsedbody = JSON.parse(body);
+        console.log(parsedbody.html_url);
+        currentGist = parsedbody.html_url;
+        res.json({result: result, url: currentGist});
+      });
+    });
   });
 });
 
