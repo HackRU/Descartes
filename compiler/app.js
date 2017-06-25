@@ -30,7 +30,7 @@ app.get('/file-ready', (req, res)=>{
       method: 'POST',
       headers: {
         'User-Agent': 'michaelyoo',
-        Authorization: config.mikesGistGithubApikey
+        Authorization: config.GitHubAPIKey
       },
       body: JSON.stringify({
         description: 'whatever you want',
