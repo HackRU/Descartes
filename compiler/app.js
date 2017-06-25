@@ -2,11 +2,16 @@ const express = require('express');
 const request = require('request');
 const path = require('path');
 const fs = require('fs');
+const bodyParser = require('body-parser');
 const { exec } = require('child_process');
 const config = require('./config.js');
 
 var app = express();
 var currentGist = "N/A";
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+app.use(bodyParser.text());
 
 app.use('/img', express.static(path.join(__dirname, '../dump')));
 app.set('json spaces', 2);
