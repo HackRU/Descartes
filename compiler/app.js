@@ -5,13 +5,15 @@ const { exec } = require('child_process');
 
 var app = express();
 
+app.use('/img', express.static(path.join(__dirname, '../dump')));
+
 app.get('/', (req, res)=>{
   res.send("HELLOWORLD");
 });
 
-app.get('/img', (req, res)=>{
-  res.sendFile(path.join(__dirname,'../dump/img.jpg'));
-})
+// app.get('/img', (req, res)=>{
+//   res.sendFile(path.join(__dirname,'../dump/img.jpg'));
+// })
 
 app.get('/file-ready', (req, res)=>{
   exec('python ../dump/test.py', (err, stdout, stderr)=>{
