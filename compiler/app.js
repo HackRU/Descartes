@@ -1,5 +1,6 @@
 const express = require('express');
 const request = require('request');
+const path = require('path');
 const { exec } = require('child_process');
 
 var app = express();
@@ -7,6 +8,10 @@ var app = express();
 app.get('/', (req, res)=>{
   res.send("HELLOWORLD");
 });
+
+app.get('/img', (req, res)=>{
+  res.sendFile(path.join(__dirname,'../dump/img.jpg'));
+})
 
 app.get('/file-ready', (req, res)=>{
   exec('python ../dump/test.py', (err, stdout, stderr)=>{
