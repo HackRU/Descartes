@@ -3,9 +3,17 @@ import numpy as np
 from flask import Flask, request, json, send_from_directory
 import http.client, urllib.request, urllib.parse, urllib.error, base64, requests, time, json
 from imgurpython import ImgurClient
+from imgurpython.helpers.error import ImgurClientError
 
-client_id = 'd18cea4af0b4c75'
-client_secret = 'e0dd972784aab4b0b4d39156f982d55c29b4d3b3'
+# client_id = 'd18cea4af0b4c75'
+# client_secret = 'e0dd972784aab4b0b4d39156f982d55c29b4d3b3'
+
+client_id = '8967bc757c42491'
+client_secret = '59188e1e022a9d08e257f0a57f2f9897f3a33d44'
+
+# BACKUP ID AND SECRET FOR IMGUR!!!
+# client_id = '0465603e8c6c721'
+# client_secret = 'eb7b91464c722451aa635b8f77aeddebc8ec8880'
 
 NGROK_URL = 'https://ea76e7c0.ngrok.io'
 AZURE_SUB_KEY = '99894b2c78f144ca80dc013e744a8da2'
@@ -16,7 +24,7 @@ AZURE_REQ_HEADERS = {
     'Ocp-Apim-Subscription-Key': AZURE_SUB_KEY,
 }
 
-TEMP_FILE = 'dump/temp.jpg'
+TEMP_FILE = 'dump/temp_img.jpg'
 imgur_client = ImgurClient(client_id, client_secret)
 
 app = Flask(__name__)
@@ -41,7 +49,7 @@ def upload():
         status=200,
         mimetype='html/text'
     )
-    
+
     return response
 
 
@@ -74,10 +82,10 @@ def parse():
             if image[r, c] < min_so_far:
                 min_so_far = image[r, c]
 
-        if min_so_far < 100 and not start:
+        if min_so_far < 75 and not start:
             start = True
             start_r = r
-        elif min_so_far > 100 and start and r - start_r > 30:
+        elif min_so_far > 75 and start and r - start_r > 30:
             start = False
             end_r = r
             list_of_sections.append({'start': start_r - 10, 'end': end_r + 10})
@@ -130,13 +138,22 @@ def parse():
 
         # print('img-{}'.format(img_num), img['indents'])
 
-        cv2.imshow('img-{}'.format(img_num), img['img'])
+        # cv2.imshow('img-{}'.format(img_num), img['img'])
         cv2.imwrite('dump/img-{}.jpg'.format(img_num), img['img'])
+        img['num'] = img_num
 
-        # r = imgur_client.upload_from_path('../dump/img-{}.jpg'.format(img_num))
-        # link_to_img = r['link']
+        try:
+            r = imgur_client.upload_from_path('dump/img-{}.jpg'.format(img_num))
+            link_to_img = r['link']
+            img['link'] = link_to_img
 
-        img['op_loc'] = send_to_azure('{}/img/{}'.format(NGROK_URL, img_num))
+            print('wrote img-{} | {}'.format(img['num'], img['link']))
+        except Exception as e:
+            print(imgur_client.credits)
+
+
+    for img in list_of_img_dicts:
+        img['op_loc'] = send_to_azure('{}'.format(img['link']))
 
 
     print('All images sent. Waiting 7 seconds for processing.')
@@ -170,12 +187,9 @@ def parse():
 
     print(full_string)
 
-    payload = {'data': full_string}
-    r = requests.post('http://34.225.118.123:8080/payload', data='hi')
-    print(r.status_code)
 
-    cv2.imshow('', np.asarray(image))
-    cv2.waitKey()
+    # cv2.imshow('', np.asarray(image))
+    # cv2.waitKey()
 
     return full_string
 
@@ -245,9 +259,11 @@ def send_to_azure(i_link):
 
 if __name__ == '__main__':
     # parse()
-    # app.run()
+
+    # payload = 'string here lol'
+
+    app.run(port=8080)
 
     # payload = {'data': 'string here lol'}
-    payload = 'string here lol'
-    r = requests.post('http://34.225.118.123:8080/payload', data=payload)
-    print(r.status_code)
+    # r = requests.post('http://34.225.118.123:8080/payload', data=payload)
+    # print(r.status_code)
