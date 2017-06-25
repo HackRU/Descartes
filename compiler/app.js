@@ -2,8 +2,10 @@ const express = require('express');
 const request = require('request');
 const path = require('path');
 const { exec } = require('child_process');
+const config = require('./config.js');
 
 var app = express();
+var global_data = fs.readFileSync('../dump/test.py').toString();
 
 app.use('/img', express.static(path.join(__dirname, '../dump')));
 
@@ -24,6 +26,28 @@ app.get('/file-ready', (req, res)=>{
       result = stdout;
     }
     res.send(result);
+    request({
+      method: 'POST',
+      headers: {
+        'User-Agent': 'michaelyoo',
+        Authorization: config.mikesGistGithubApikey
+      },
+      body: JSON.stringify({
+        description: 'whatever you want',
+        public: true,
+        files: {
+          'test.py': {
+            content: global_data
+          }
+        }
+      }),
+      uri:"https://api.github.com/gists"
+
+    }, function(error, response, body){
+      console.log('error:', error);
+      console.log('statusCode:', response.statusCode);
+      console.log('body:', body);
+    })
   });
 });
 
