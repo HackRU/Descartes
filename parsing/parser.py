@@ -5,11 +5,12 @@ import http.client, urllib.request, urllib.parse, urllib.error, base64, requests
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError
 
-# client_id = 'd18cea4af0b4c75'
-# client_secret = 'e0dd972784aab4b0b4d39156f982d55c29b4d3b3'
-
-client_id = '8967bc757c42491'
-client_secret = '59188e1e022a9d08e257f0a57f2f9897f3a33d44'
+# rate-limited
+client_id = 'd18cea4af0b4c75'
+client_secret = 'e0dd972784aab4b0b4d39156f982d55c29b4d3b3'
+#
+# client_id = '8967bc757c42491'
+# client_secret = '59188e1e022a9d08e257f0a57f2f9897f3a33d44'
 
 # BACKUP ID AND SECRET FOR IMGUR!!!
 # client_id = '0465603e8c6c721'
@@ -119,12 +120,13 @@ def parse():
                             img['indents'] = 0
                         else:
                             diff = abs(c_num - code_start_pos)
+
                             if indent_gap == 0: # set the initial indent gap
                                 indent_gap = diff
 
                             # print(diff, indent_gap)
 
-                            if diff//indent_gap - last_indent > 1:
+                            if (diff//indent_gap - last_indent) > 1:
                                 img['indents'] = last_indent+1
                             else:
                                 img['indents'] = diff//indent_gap
@@ -153,7 +155,8 @@ def parse():
 
 
     for img in list_of_img_dicts:
-        img['op_loc'] = send_to_azure('{}'.format(img['link']))
+        if img['link'] is not None:
+            img['op_loc'] = send_to_azure('{}'.format(img['link']))
 
 
     print('All images sent. Waiting 7 seconds for processing.')
@@ -185,13 +188,13 @@ def parse():
         full_string += (img['parsed'] + '\n')
 
 
-    print(full_string)
+    print(full_string.lower())
 
 
     # cv2.imshow('', np.asarray(image))
     # cv2.waitKey()
 
-    return full_string
+    return full_string.lower()
 
 
 
@@ -199,15 +202,18 @@ def process_line_syntax(line):
 
     # check for matching parenthesis
 
+    new_line = line
 
     # this checks first word to see if we should put colon
     vars = ['def', 'if', 'for', 'else', 'elif']
-    if line.split(' ')[0] in vars and line[-1:] != ':':
-        line = line + ':'
+    split_line = line.split(' ')
+    print('split line: {}'.format(split_line))
+    if split_line[0] in vars and not split_line[-1].endswith(':'):
+        new_line = new_line + ':'
 
 
 
-    return line
+    return new_line
 
 
 
